@@ -1,0 +1,43 @@
+{
+  "name": "highschool-faq-chatbot",
+  "version": "1.0.0",
+  "description": "- Win 11, 파이썬 3.13을 이용하는 경우 pip install -r requirements.txt로 패키지를 설치하는 과정에서 에러가 발생할 수 있습니다 ('24.11.24 기준)",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eunjilee123/highschool-faq-chatbot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eunjilee123/highschool-faq-chatbot/issues"
+  },
+  "homepage": "https://eunjilee123.github.io/highschool-faq-chatbot",
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  },
+  "dependencies": {
+    "react-scripts": "^5.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
