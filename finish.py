@@ -52,9 +52,45 @@ def chunk_documents(documents: List[Document]) -> List[Document]:
     return text_splitter.split_documents(documents)
 
 ## 4: Document를 벡터DB로 저장
+import tiktoken
+
+enc = tiktoken.encoding_for_model("text-embedding-3-small")
+
+def get_token_count(text: str) -> int:
+    return len(enc.encode(text))
+
+def chunk_documents_by_tokens(documents, max_tokens=300000):
+    chunks = []
+    current_chunk = []
+    current_token_count = 0
+
+    for doc in documents:
+        token_count = get_token_count(doc.page_content)
+        if current_token_count + token_count > max_tokens:
+            chunks.append(current_chunk)
+            current_chunk = [doc]
+            current_token_count = token_count
+        else:
+            current_chunk.append(doc)
+            current_token_count += token_count
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
+    return chunks
+
 def save_to_vector_store(documents: List[Document]) -> None:
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    vector_store = FAISS.from_documents(documents, embedding=embeddings)
+    chunks = chunk_documents_by_tokens(documents, max_tokens=300000)
+    vector_store = None
+
+    for chunk in chunks:
+        current_index = FAISS.from_documents(chunk, embedding=embeddings)
+        if vector_store is None:
+            vector_store = current_index
+        else:
+            vector_store.merge_from(current_index)
+
     vector_store.save_local("faiss_index")
 
 
@@ -139,27 +175,14 @@ def natural_sort_key(s):
     return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', s)]
 
 def main():
-    st.set_page_config("청약 FAQ 챗봇", layout="wide")
+    st.set_page_config("고교학점제 FAQ 챗봇", layout="wide")
 
     left_column, right_column = st.columns([1, 1])
     with left_column:
-        st.header("청약 FAQ 챗봇")
-
-        pdf_doc = st.file_uploader("PDF Uploader", type="pdf")
-        button =  st.button("PDF 업로드하기")
-        if pdf_doc and button:
-            with st.spinner("PDF문서 저장중"):
-                pdf_path = save_uploadedfile(pdf_doc)
-                pdf_document = pdf_to_documents(pdf_path)  #
-                smaller_documents = chunk_documents(pdf_document)
-                save_to_vector_store(smaller_documents)
-            # (3단계) PDF를 이미지로 변환해서 세션 상태로 임시 저장
-            with st.spinner("PDF 페이지를 이미지로 변환중"):
-                images = convert_pdf_to_images(pdf_path)
-                st.session_state.images = images
+        st.header("고교학점제 FAQ 챗봇")
 
         user_question = st.text_input("PDF 문서에 대해서 질문해 주세요",
-                                        placeholder="무순위 청약 시에도 부부 중복신청이 가능한가요?")
+                                        placeholder="등급이 안 나오는 과목을 알려줘")
 
         if user_question:
             response, context = process_question(user_question)
@@ -191,3 +214,25 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# 고정 PDF 경로 지정
+pdf_path = "C:/Users/WIN10/apartment_lottery_faq_chatbot/PDF_임시폴더/2022개정 고등학교 과목 선택 안내자료-경기도교육청.pdf"
+
+
+ # 예시 파일명, 본인이 넣은 파일명으로 수정
+
+# PDF를 문서로 변환 후 벡터DB 저장 (최초 실행 시만 필요)
+with st.spinner("PDF 문서 로드 중..."):
+    pdf_document = pdf_to_documents(pdf_path)
+    smaller_documents = chunk_documents(pdf_document)
+    save_to_vector_store(smaller_documents)
+
+# PDF를 이미지로 변환해서 세션 상태로 임시 저장
+with st.spinner("PDF 페이지를 이미지로 변환 중..."):
+    images = convert_pdf_to_images(pdf_path)
+    st.session_state.images = images
+
+
+apartment_lottery_faq_chatbot
+public
+선택과목_배포_구조_요약.pdf
