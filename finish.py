@@ -182,7 +182,7 @@ def main():
         st.header("고교학점제 FAQ 챗봇")
 
         user_question = st.text_input("PDF 문서에 대해서 질문해 주세요",
-                                        placeholder="등급이 안 나오는 과목을 알려줘")
+                                        placeholder="윤리와 사상 성적 산출에 대해 알려줘")
 
         if user_question:
             response, context = process_question(user_question)
@@ -216,7 +216,21 @@ if __name__ == "__main__":
     main()
 
 # 고정 PDF 경로 지정
-pdf_path = "C:/Users/WIN10/apartment_lottery_faq_chatbot/PDF_임시폴더/2022개정 고등학교 과목 선택 안내자료-경기도교육청.pdf"
+# 고정 PDF 경로 지정 (Streamlit Cloud에서 사용 가능한 상대 경로로 수정)
+pdf_paths = [
+    "PDF_임시폴더/2022개정 고등학교 과목 선택 안내자료-경기도교육청.pdf",
+    "PDF_임시폴더/선택과목_배포_구조_요약.pdf"
+]
+
+all_documents = []
+for path in pdf_paths:
+    pdf_document = pdf_to_documents(path)
+    smaller_documents = chunk_documents(pdf_document)
+    all_documents.extend(smaller_documents)
+
+save_to_vector_store(all_documents)
+
+
 
 
  # 예시 파일명, 본인이 넣은 파일명으로 수정
