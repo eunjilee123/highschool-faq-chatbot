@@ -174,9 +174,45 @@ def display_pdf_page(image_path: str, page_number: int) -> None:
 def natural_sort_key(s):
     return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', s)]
 
-def main():
-    st.set_page_config("고교학점제 FAQ 챗봇", layout="wide")
+import streamlit as st
+import os  # os도 필요하니까 추가
+# 다른 필요한 import도 여기에
 
+# ✅ set_page_config는 가장 위에서 단 한 번만!
+st.set_page_config(page_title="고교학점제 FAQ 챗봇", layout="wide")
+
+# 상단 안내 메시지
+st.markdown("""
+<style>
+.notice-box {
+    padding: 1em;
+    background-color: #fff3cd;
+    border-left: 6px solid #ffa500;
+    color: #856404;
+    border-radius: 5px;
+    margin-bottom: 1em;
+    font-weight: 500;
+}
+</style>
+
+<div class="notice-box">
+    ⚠️ 챗봇 답변이 부족할 수 있어요!<br>
+    📄 아래 요약된 <strong>PDF 이미지 자료</strong>를 참고해 주세요.
+</div>
+""", unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+
+
+def main():
+    
     left_column, right_column = st.columns([1, 1])
     with left_column:
         st.header("고교학점제 FAQ 챗봇")
@@ -217,18 +253,26 @@ if __name__ == "__main__":
 
 # 고정 PDF 경로 지정
 # 고정 PDF 경로 지정 (Streamlit Cloud에서 사용 가능한 상대 경로로 수정)
-pdf_paths = [
-    "PDF_임시폴더/2022개정 고등학교 과목 선택 안내자료-경기도교육청.pdf",
-    "PDF_임시폴더/선택과목_배포_구조_요약.pdf"
-]
 
-all_documents = []
-for path in pdf_paths:
-    pdf_document = pdf_to_documents(path)
-    smaller_documents = chunk_documents(pdf_document)
-    all_documents.extend(smaller_documents)
+# 파일 경로 설정
+import os
+from langchain_community.document_loaders import PyMuPDFLoader
 
-save_to_vector_store(all_documents)
+def pdf_to_documents(pdf_path):
+    if not os.path.isfile(pdf_path):
+        raise ValueError(f"File path {pdf_path} is not a valid file.")
+    loader = PyMuPDFLoader(pdf_path)
+    return loader.load()
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+pdf_path = os.path.join(CURRENT_DIR, "public", "2022개정 고등학교 과목 선택 안내자료-경기도교육청.pdf")
+
+pdf_document = pdf_to_documents(pdf_path)
+
+
+
+
+
 
 
 
@@ -247,6 +291,34 @@ with st.spinner("PDF 페이지를 이미지로 변환 중..."):
     st.session_state.images = images
 
 
-apartment_lottery_faq_chatbot
-public
-선택과목_배포_구조_요약.pdf
+import subprocess
+import time
+import requests
+
+# ngrok 실행 (백그라운드로)
+subprocess.Popen(["ngrok", "http", "8501"])
+
+# ngrok 연결 기다리기
+time.sleep(5)
+
+# ngrok 주소 가져오기
+def get_ngrok_url():
+    res = requests.get("http://127.0.0.1:4040/api/tunnels")
+    tunnels = res.json()["tunnels"]
+    for tunnel in tunnels:
+        if tunnel["proto"] == "https":
+            return tunnel["public_url"]
+    return None
+
+# 디스코드 전송
+def send_to_discord(url):
+    webhook_url = "https://discord.com/api/webhooks/..."  # 너의 webhook
+    data = {"content": f"🟢 새로운 ngrok 주소가 생성되었습니다:\n{url}"}
+    requests.post(webhook_url, json=data)
+
+url = get_ngrok_url()
+if url:
+    send_to_discord(url)
+    print("✅ 자동 전송 완료!")
+else:
+    print("❌ ngrok 주소를 못 찾았어요.")
