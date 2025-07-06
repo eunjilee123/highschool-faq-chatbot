@@ -5,7 +5,8 @@ import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
 from langchain_core.documents.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
