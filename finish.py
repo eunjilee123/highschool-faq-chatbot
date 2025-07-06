@@ -295,30 +295,6 @@ import subprocess
 import time
 import requests
 
-# ngrok 실행 (백그라운드로)
-subprocess.Popen(["ngrok", "http", "8501"])
 
-# ngrok 연결 기다리기
-time.sleep(5)
 
-# ngrok 주소 가져오기
-def get_ngrok_url():
-    res = requests.get("http://127.0.0.1:4040/api/tunnels")
-    tunnels = res.json()["tunnels"]
-    for tunnel in tunnels:
-        if tunnel["proto"] == "https":
-            return tunnel["public_url"]
-    return None
 
-# 디스코드 전송
-def send_to_discord(url):
-    webhook_url = "https://discord.com/api/webhooks/..."  # 너의 webhook
-    data = {"content": f"🟢 새로운 ngrok 주소가 생성되었습니다:\n{url}"}
-    requests.post(webhook_url, json=data)
-
-url = get_ngrok_url()
-if url:
-    send_to_discord(url)
-    print("✅ 자동 전송 완료!")
-else:
-    print("❌ ngrok 주소를 못 찾았어요.")
